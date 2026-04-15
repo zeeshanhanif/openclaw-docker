@@ -25,6 +25,7 @@ services:
         "lan",
         "--port",
         "18789",
+        "--allow-unconfigured",
       ]
     healthcheck:
       test:
@@ -57,7 +58,7 @@ services:
     entrypoint: ["node", "dist/index.js"]
     depends_on:
       openclaw-gateway:
-        condition: service_healthy
+        condition: service_started
     profiles:
       - cli
 
