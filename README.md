@@ -29,17 +29,26 @@ Run OpenClaw AI assistant in Docker so it cannot access your host machine beyond
    docker compose up -d
    ```
 
-4. **Run onboarding** (first time only)
+4. **Open the web UI**
+
+   Go to http://127.0.0.1:18789/ and enter the WebSocket URL (`ws://127.0.0.1:18789`) and gateway token (from `.env` or `openclaw-config/openclaw.json` under `gateway.auth.token`).
+
+5. **Approve browser pairing** (required once per browser)
+
+   After you click **Connect**, the dashboard may show **pairing required**. The gateway must approve your browser as a device. With the gateway running:
 
    ```bash
-   docker compose run --rm --profile cli openclaw-cli onboard
+   docker compose --profile cli run --rm openclaw-cli devices list
+   docker compose --profile cli run --rm openclaw-cli devices approve --latest
    ```
 
-   This generates a gateway token and writes it to your config. Copy the token.
+   Then click **Connect** again in the browser.
 
-5. **Open the web UI**
+   Optional: run interactive onboarding (providers, channels) if you prefer a wizard:
 
-   Go to http://127.0.0.1:18789/ and paste the gateway token into Settings.
+   ```bash
+   docker compose --profile cli run --rm openclaw-cli onboard
+   ```
 
 ## Common Commands
 
@@ -57,10 +66,10 @@ docker compose logs -f openclaw-gateway
 docker compose exec openclaw-gateway bash
 
 # Run any CLI command
-docker compose run --rm --profile cli openclaw-cli <command>
+docker compose --profile cli run --rm openclaw-cli <command>
 
 # Add a Telegram channel
-docker compose run --rm --profile cli openclaw-cli channels add --channel telegram --token "<bot-token>"
+docker compose --profile cli run --rm openclaw-cli channels add --channel telegram --token "<bot-token>"
 
 # Check health
 curl -fsS http://127.0.0.1:18789/healthz
@@ -80,3 +89,17 @@ The container has **no access** to any other host directory (home, ssh, aws, etc
 - **Host isolation**: Only the two directories above are visible to the container. Your host filesystem is completely hidden.
 - **Unrestricted inside the container**: The agent can install packages, run commands, and write files freely within its sandbox.
 - **Localhost-only ports**: The web UI (18789) and bridge (18790) are bound to `127.0.0.1`, preventing network exposure.
+
+## Troubleshooting
+
+### "pairing required" in the Control UI
+
+OpenClaw treats the dashboard as a **paired device**, not only token auth. After connecting once from the browser, approve the pending request from the CLI (see step 5 in Quick Start). Use `devices list` if you need the request ID, or `devices approve --latest` for the most recent pending request.
+
+### Tokenized dashboard URL (alternative)
+
+```bash
+docker compose --profile cli run --rm openclaw-cli dashboard --no-open
+```
+
+Paste the printed URL in the browser if you prefer the wizard-generated link.
