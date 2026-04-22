@@ -3,4 +3,5 @@
 
 # OpenClaw runtime data
 openclaw-config/
+openclaw-tmp-logs/
 workspace/
